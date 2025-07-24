@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/apple-touch-icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"nebulas-star.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文最初完成于2021&#x2F;07&#x2F;15，原使用MediaWiki语言写就。本文记录对CRI Sofdec格式的数据流之结构的分析结果。 除不明数据段之外的所有结构已分析完成。 CRI Sofdec简述CRI Sofdec格式为CRI Middleware公司开发的视频中间件格式，典型扩展名为SFD。当前CRI Middleware已停止支持该格式。 该格式的数据结构为一种MPEG-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CRI Sofdec 数据结构分析">
+<meta property="og:url" content="http://nebulas-star.github.io/2022-06-12_CRI-Sofdec-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="星云Nebulas的随记博客">
+<meta property="og:description" content="本文最初完成于2021&#x2F;07&#x2F;15，原使用MediaWiki语言写就。本文记录对CRI Sofdec格式的数据流之结构的分析结果。 除不明数据段之外的所有结构已分析完成。 CRI Sofdec简述CRI Sofdec格式为CRI Middleware公司开发的视频中间件格式，典型扩展名为SFD。当前CRI Middleware已停止支持该格式。 该格式的数据结构为一种MPEG-">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-12T02:04:05.000Z">
+<meta property="article:modified_time" content="2022-06-12T02:35:15.664Z">
+<meta property="article:author" content="星云nebulas">
+<meta property="article:tag" content="逆向分析">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://nebulas-star.github.io/2022-06-12_CRI-Sofdec-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>CRI Sofdec 数据结构分析 | 星云Nebulas的随记博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">星云Nebulas的随记博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">有感而发，随兴而写</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-links">
+
+    <a href="/links/" rel="section"><i class="fa fa-fw fa-����"></i>links</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nebulas-star.github.io/2022-06-12_CRI-Sofdec-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="星云nebulas">
+      <meta itemprop="description" content="有感而发，随兴而写">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="星云Nebulas的随记博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CRI Sofdec 数据结构分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-06-12 10:04:05 / 修改时间：10:35:15" itemprop="dateCreated datePublished" datetime="2022-06-12T10:04:05+08:00">2022-06-12</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h6 id="本文最初完成于2021-x2F-07-x2F-15，原使用MediaWiki语言写就。"><a href="#本文最初完成于2021-x2F-07-x2F-15，原使用MediaWiki语言写就。" class="headerlink" title="本文最初完成于2021&#x2F;07&#x2F;15，原使用MediaWiki语言写就。"></a>本文最初完成于2021&#x2F;07&#x2F;15，原使用MediaWiki语言写就。</h6><p>本文记录对CRI Sofdec格式的数据流之结构的分析结果。</p>
+<p>除不明数据段之外的所有结构已分析完成。</p>
+<h2 id="CRI-Sofdec简述"><a href="#CRI-Sofdec简述" class="headerlink" title="CRI Sofdec简述"></a>CRI Sofdec简述</h2><p>CRI Sofdec格式为CRI Middleware公司开发的视频中间件格式，典型扩展名为SFD。当前CRI Middleware已停止支持该格式。</p>
+<p>该格式的数据结构为一种MPEG-1系统层（定义于ISO&#x2F;IEC 11172-1）的变体。其中至少有一路MPEG-1&#x2F;2视频流，可能有至少一路SFA（<a target="_blank" rel="noopener" href="https://wiki.multimedia.cx/index.php/CRI_ADX_file">CRI ADX</a>的一种变体）&#x2F;AIX流，在有SFA流的同时可能有至少一路AC-3流。</p>
+<h2 id="CRI-Sofdec结构"><a href="#CRI-Sofdec结构" class="headerlink" title="CRI Sofdec结构"></a>CRI Sofdec结构</h2><p>CRI Sofdec数据流（下简称SFD）内部有多个符合ISO&#x2F;IEC 11172-1的2.4.3.2节定义的包。每个包的大小均为0x800。</p>
+<p>其中，第00-03个包标示了SFD的各种信息，之后的包为经多路复用的音视频流。</p>
+<p>以下所提到的各涉及原始MPEG-1结构的数据字段名均由ISO&#x2F;IEC 11172所定义。</p>
+<h3 id="信息包组"><a href="#信息包组" class="headerlink" title="信息包组"></a>信息包组</h3><p>信息包组即指SFD内部的第00-03个包（较旧版本的SFD可能缺少第03个包）。</p>
+<p>下面列出这些包的结构。</p>
+<h4 id="第00个包（音频流声明包）（若无音频流，则该包不存在）"><a href="#第00个包（音频流声明包）（若无音频流，则该包不存在）" class="headerlink" title="第00个包（音频流声明包）（若无音频流，则该包不存在）"></a>第00个包（音频流声明包）（若无音频流，则该包不存在）</h4><table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0000</td>
+<td>包头</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pack_start_code = default (&#x27;00 00 01 BA&#x27;[hex])</span><br><span class="line">system_clock_refence = [default]</span><br><span class="line">mux_rate = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x000C</td>
+<td>系统头</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">system_header_start_code = default (&#x27;00 00 01 BB&#x27;[hex])</span><br><span class="line">header_length = [default]</span><br><span class="line">rate_bound = [mux_rate]</span><br><span class="line">audio_bound = [default]</span><br><span class="line">flxed_flag = &#x27;1&#x27;</span><br><span class="line">CSPS_flag = &#x27;0&#x27;</span><br><span class="line">system_audio_lock_flag = &#x27;0&#x27;</span><br><span class="line">system_video_lock_flag = &#x27;0&#x27;</span><br><span class="line">video_bound = &#x27;0 0000&#x27;</span><br><span class="line">reserved_byte = default (&#x27;1111 1111&#x27;)</span><br><span class="line">stream_id = [default]</span><br><span class="line">STD_buffer_bound_scale = &#x27;0&#x27;</span><br><span class="line">STD_buffer_size_bound = &#x27;0 0000 0000 0100&#x27;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x001B + 3 * audio_bound</td>
+<td>分组头</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = &#x27;BE&#x27;[hex] (填充流)</span><br><span class="line">packet_length = [default]</span><br><span class="line">&#x27;0000 1111&#x27;</span><br><span class="line">填充流数据(长度[packet_length])。全为 &#x27;FF&#x27;[hex] 。结束于0x07FF。</span><br></pre></td></tr></table></figure>
+
+<h4 id="第01个包（视频流声明包）"><a href="#第01个包（视频流声明包）" class="headerlink" title="第01个包（视频流声明包）"></a>第01个包（视频流声明包）</h4><table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0000</td>
+<td>包头</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pack_start_code = default (&#x27;00 00 01 BA&#x27;[hex])</span><br><span class="line">system_clock_refence = [default]</span><br><span class="line">mux_rate = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x000C</td>
+<td>系统头</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">system_header_start_code = default (&#x27;00 00 01 BB&#x27;[hex])</span><br><span class="line">header_length = [default]</span><br><span class="line">rate_bound = [mux_rate]</span><br><span class="line">audio_bound = &#x27;0000 00&#x27;</span><br><span class="line">flxed_flag = &#x27;1&#x27;</span><br><span class="line">CSPS_flag = &#x27;0&#x27;</span><br><span class="line">system_audio_lock_flag = &#x27;0&#x27;</span><br><span class="line">system_video_lock_flag = &#x27;0&#x27;</span><br><span class="line">video_bound = [default]</span><br><span class="line">reserved_byte = default (&#x27;1111 1111&#x27;)</span><br><span class="line">stream_id = [default]</span><br><span class="line">STD_buffer_bound_scale = &#x27;1&#x27;</span><br><span class="line">STD_buffer_size_bound = &#x27;0 0000 0010 1110&#x27;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x001B + 3 * video_bound</td>
+<td>分组头</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = &#x27;BE&#x27;[hex] (填充流)</span><br><span class="line">packet_length = [default]</span><br><span class="line">&#x27;0000 1111&#x27;</span><br><span class="line">填充流数据(长度[packet_length])。全为 &#x27;FF&#x27;[hex] 。结束于0x07FF。</span><br></pre></td></tr></table></figure>
+
+<h4 id="第02个包（Sofdec信息包）［版本1］"><a href="#第02个包（Sofdec信息包）［版本1］" class="headerlink" title="第02个包（Sofdec信息包）［版本1］"></a>第02个包（Sofdec信息包）［版本1］</h4><table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>未声明</td>
+<td>填充字段。全为&#39;00&#39;[hex]。</td>
+</tr>
+<tr>
+<td>0x0000</td>
+<td>包头(长度12)</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pack_start_code = default (&#x27;00 00 01 BA&#x27;[hex])</span><br><span class="line">system_clock_refence = [default]</span><br><span class="line">mux_rate = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x000C</td>
+<td>分组头(长度6)</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = &#x27;BF&#x27;[hex] (private_stream_2, 私用流)</span><br><span class="line">packet_length = [default] ( 典型值：&#x27;07 EE&#x27;[hex] )</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0020</td>
+<td>流类型标记？长度24。恒定值。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x27;53 6F 66 64 65 63 53 74 72 65 61 6D 20 20 20 20 20 20 20 20 20 20 20 20&#x27;[hex]</span><br><span class="line">= [SofdecStream            ]</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0038</td>
+<td>版本标记。长度8。</td>
+</tr>
+<tr>
+<td>0x0040</td>
+<td>SFD文件名及生成时间。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0x00：生成文件名。长度8。不足以空格(&#x27;20&#x27;[hex])填充。</span><br><span class="line">0x08：&#x27;2E 73 66 64&#x27;[hex] (&quot;.sfd&quot;)</span><br><span class="line">0x0C：生成时间。长度12。YYYYMMDDhhmm。</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0060</td>
+<td>多路复用器内部ID。长度32。示例：</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x27;53 46 4D 20 56 65 72 2E 32 2E 32 35 20 32 30 30 34 2D 30 37 2D 32 31 20 43 52 49 2D 4D 57 20 20&#x27;[hex]</span><br><span class="line">= [SFM Ver.2.25 2004-07-21 CRI-MW  ]</span><br><span class="line">&#x27;53 6F 66 64 65 63 20 43 52 41 46 54 2F 47 55 49 20 56 65 72 2E 31 2E 37 34 00 00 00 00 00 00 00&#x27;[hex]</span><br><span class="line">= [Sofdec CRAFT/GUI Ver.1.74]</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0080 - 0x008F</td>
+<td>不明数据段。</td>
+</tr>
+<tr>
+<td>0x00B0 - 0x00CF</td>
+<td>不明数据段。</td>
+</tr>
+<tr>
+<td>0x0180</td>
+<td>原始I&#x2F;O记录。每长度64记述一条文件信息。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0x00：文件名。长度8。</span><br><span class="line">0x08：后缀名。长度4。</span><br><span class="line">0x0C：生成时间。长度12。YYYYMMDDhhmm。</span><br><span class="line">0x18：不明数据段。</span><br></pre></td></tr></table></figure>
+<h4 id="第02个包（Sofdec信息包）［版本2］"><a href="#第02个包（Sofdec信息包）［版本2］" class="headerlink" title="第02个包（Sofdec信息包）［版本2］"></a>第02个包（Sofdec信息包）［版本2］</h4><table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>未声明</td>
+<td>填充字段。全为&#39;00&#39;[hex]。</td>
+</tr>
+<tr>
+<td>0x0000</td>
+<td>包头(长度12)</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pack_start_code = default (&#x27;00 00 01 BA&#x27;[hex])</span><br><span class="line">system_clock_refence = [default]</span><br><span class="line">mux_rate = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x000C</td>
+<td>分组头(长度6)</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = &#x27;BF&#x27;[hex] (private_stream_2, 私用流)</span><br><span class="line">packet_length = [default] ( 典型值：&#x27;07 EE&#x27;[hex] )</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0020</td>
+<td>流类型标记？长度24。恒定值。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x27;53 6F 66 64 65 63 53 74 72 65 61 6D 32 20 20 20 20 20 20 20 20 20 20 20&#x27;[hex]</span><br><span class="line">= [SofdecStream2           ]</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0038</td>
+<td>版本标记。长度8。</td>
+</tr>
+<tr>
+<td>0x0040</td>
+<td>多路复用器内部ID。长度32。</td>
+</tr>
+<tr>
+<td>其他部分</td>
+<td>不明数据段。</td>
+</tr>
+</tbody></table>
+<h4 id="第03个包（起始地址：0x00001800，源信息包（暂称））"><a href="#第03个包（起始地址：0x00001800，源信息包（暂称））" class="headerlink" title="第03个包（起始地址：0x00001800，源信息包（暂称））"></a>第03个包（起始地址：0x00001800，源信息包（暂称））</h4><p>  可确认SFM 1.61版本即有此包。记述子流的一些参数？疑似供官方播放器使用。</p>
+<h2 id="多路复用流包组"><a href="#多路复用流包组" class="headerlink" title="多路复用流包组"></a>多路复用流包组</h2><p>多路复用流包即指SFD内部信息包组以后的所有包。</p>
+<p>这些包的顺序可能是以分组头中 &#39;decoding_time_stamp&#39; 字段（若不存在，则为 &#39;persentation_time_stamp&#39; 字段）的升序排列。没有该字段的包和后一个包捆绑排列。</p>
+<p>下面列出这些包的结构。</p>
+<h4 id="音频流子包结构"><a href="#音频流子包结构" class="headerlink" title="音频流子包结构"></a>音频流子包结构</h4><table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0000</td>
+<td>包头。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pack_start_code = default (&#x27;00 00 01 BA&#x27;[hex])</span><br><span class="line">system_clock_refence = [default]</span><br><span class="line">mux_rate = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x000C</td>
+<td>分组头。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = [default]</span><br><span class="line">packet_length = [default] ( 典型值：&#x27;07 E7&#x27;[hex] )</span><br><span class="line">&#x27;01&#x27;</span><br><span class="line">STD_buffer_scale = 0</span><br><span class="line">STD_buffer_size = &#x27;00000 00000100&#x27;</span><br><span class="line">&#x27;0010&#x27;</span><br><span class="line">presentation_time_stamp = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0019</td>
+<td>包数据。结束于0x07F8。</td>
+</tr>
+<tr>
+<td>0x07F9</td>
+<td>补偿填充流（长度7）。&#39;00 00 01 BE 00 01 0F&#39;[hex]。</td>
+</tr>
+</tbody></table>
+<h4 id="视频流子包结构"><a href="#视频流子包结构" class="headerlink" title="视频流子包结构"></a>视频流子包结构</h4><table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0000</td>
+<td>包头。</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pack_start_code = default (&#x27;00 00 01 BA&#x27;[hex])</span><br><span class="line">system_clock_refence = [default]</span><br><span class="line">mux_rate = default</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x000C</td>
+<td>分组头。</td>
+</tr>
+</tbody></table>
+<p>当本组数据中第一个picture_head为 I&#x2F;P图（帧）的head时：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = [default]</span><br><span class="line">packet_length = [default] ( 典型值：&#x27;07 EE&#x27;[hex] )</span><br><span class="line">&#x27;01&#x27;</span><br><span class="line">STD_buffer_scale = 1</span><br><span class="line">STD_buffer_size = &#x27;00000 00101110&#x27;</span><br><span class="line">&#x27;0011&#x27;</span><br><span class="line">presentation_time_stamp = default</span><br><span class="line">&#x27;0001&#x27;</span><br><span class="line">decoding_time_stamp = default</span><br></pre></td></tr></table></figure>
+<p>当本组数据中第一个picture_head为 B图（帧）的head时：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = [default] ( 典型值：&#x27;E0&#x27;[hex] ) </span><br><span class="line">packet_length = [default] ( 典型值：&#x27;07 EE&#x27;[hex] )</span><br><span class="line">stuffing_byte ( &#x27;1111 1111&#x27; ) × 5</span><br><span class="line">&#x27;01&#x27;</span><br><span class="line">STD_buffer_scale = default ( &#x27;1&#x27;, 对于视频流 )</span><br><span class="line">STD_buffer_size = &#x27;00000 00101110&#x27;</span><br><span class="line">&#x27;0010&#x27;</span><br><span class="line">presentation_time_stamp = default</span><br></pre></td></tr></table></figure>
+<p>当本组中不存在picture_head时：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">packet_start_codec_prefix = default (&#x27;00 00 01&#x27;[hex])</span><br><span class="line">stream_id = [default] ( 典型值：&#x27;E0&#x27;[hex] ) </span><br><span class="line">packet_length = [default] ( 典型值：&#x27;07 EE&#x27;[hex] )</span><br><span class="line">stuffing_byte ( &#x27;1111 1111&#x27; ) × 9</span><br><span class="line">&#x27;01&#x27;</span><br><span class="line">STD_buffer_scale = default ( &#x27;1&#x27;, 对于视频流 )</span><br><span class="line">STD_buffer_size = &#x27;00000 00101110&#x27;</span><br><span class="line">&#x27;0000 1111&#x27;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>偏址</th>
+<th>信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x001E</td>
+<td>包数据。结束于0x07FF。</td>
+</tr>
+</tbody></table>
+<p>对于每个子流的最后一个子包，在这个包的后部应当添加一个填充流分组以保持各包0x800对齐。</p>
+<p>对于SFD的最后一个包，在这个包的后部应当添加一个以 &#39;00 00 01 B9&#39;[hex]<br>开始且其他位均为 &#39;FF&#39;[hex] 的，长度为0x800的数据块。</p>
+<h3 id="数据计算"><a href="#数据计算" class="headerlink" title="数据计算"></a>数据计算</h3><p>system_clock_refence字段计算时，system_clock_frequency值应稍大于90000。</p>
+<p>mux_rate&#x2F;rate_bound字段的计算公式：1 + 0x40F38 * m1v数 + 0x471 * AC3数 + 所有SFA的basic_rate和。</p>
+<p>其中，对于双声道SFA，其basic_rate &#x3D; 1097 &#x2F; 48000 * 采样率；对于采样率24000的单声道SFA，其basic_rate &#x3D; 322。</p>
+<p>音频流presentation_time_stamp字段的计算公式：该音频流包序号 * 该音频流时基。</p>
+<p>对于AC3音频流，其时基为0xCA8；对于SFA音频流，其时基为322,560,000 &#x2F; (采样率 * 声道数) 。</p>
+<p>视频流decoding_time_stamp字段的计算公式：该包中第一个picture_head所指的图（帧）在整个视频流中的序号（位流顺序）*  该视频流时基。</p>
+<p>视频流presentation_time_stamp字段的计算公式：该包中第一个picture_head所指的图（帧）在整个视频流中的序号（演播顺序）* 该视频流时基。</p>
+<p>关于视频流中图（帧）的位流顺序与演播顺序的差异请参看 ISO&#x2F;IEC 11172-2:1993 的D2.3节。</p>
+<p>视频流的时基为 90000 &#x2F; 该视频流的图速率（帧率）。</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>SFA音频流与一般的ADX文件的差异：其空白填充段结束标志 ‘(c)CRI’ 在0x11A~0x11F处。</p>
+<p>Sofdec格式文件中的AIX流一般以遵循 “Dobly Digital AIX” 的方式排布子流。</p>
+<p>依据本文的<a target="_blank" rel="noopener" href="https://github.com/nebulas-star/SFD_Muxer">Sofdec混流器实现</a>已基本完成。</p>
+<h2 id="参考标准"><a href="#参考标准" class="headerlink" title="参考标准"></a>参考标准</h2><p>ISO&#x2F;IEC 11172-1:1993</p>
+<p>GB&#x2F;T 17191.1-1997 (idt ISO&#x2F;IEC 11172-1:1993)</p>
+<p>ISO&#x2F;IEC 11172-1:1993&#x2F;Cor.1:1996</p>
+<p>ISO&#x2F;IEC 11172-1:1993&#x2F;Cor.2:1999</p>
+<p>GB&#x2F;T 17191.2-1997 (idt ISO&#x2F;IEC 11172-2:1993)</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>星云nebulas
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://nebulas-star.github.io/2022-06-12_CRI-Sofdec-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" title="CRI Sofdec 数据结构分析">http://nebulas-star.github.io/2022-06-12_CRI-Sofdec-数据结构分析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" rel="tag"># 逆向分析</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022-06-11_%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" rel="prev" title="第一篇博客">
+      <i class="fa fa-chevron-left"></i> 第一篇博客
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022-07-02_FCSG%E5%88%86%E6%9E%90%E9%9A%8F%E8%AE%B01/" rel="next" title="《Famicom ADV Steins;Gate》分析随记（1）">
+      《Famicom ADV Steins;Gate》分析随记（1） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%9C%AC%E6%96%87%E6%9C%80%E5%88%9D%E5%AE%8C%E6%88%90%E4%BA%8E2021-x2F-07-x2F-15%EF%BC%8C%E5%8E%9F%E4%BD%BF%E7%94%A8MediaWiki%E8%AF%AD%E8%A8%80%E5%86%99%E5%B0%B1%E3%80%82"><span class="nav-number">1.</span> <span class="nav-text">本文最初完成于2021&#x2F;07&#x2F;15，原使用MediaWiki语言写就。</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CRI-Sofdec%E7%AE%80%E8%BF%B0"><span class="nav-number"></span> <span class="nav-text">CRI Sofdec简述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CRI-Sofdec%E7%BB%93%E6%9E%84"><span class="nav-number"></span> <span class="nav-text">CRI Sofdec结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E6%81%AF%E5%8C%85%E7%BB%84"><span class="nav-number"></span> <span class="nav-text">信息包组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC00%E4%B8%AA%E5%8C%85%EF%BC%88%E9%9F%B3%E9%A2%91%E6%B5%81%E5%A3%B0%E6%98%8E%E5%8C%85%EF%BC%89%EF%BC%88%E8%8B%A5%E6%97%A0%E9%9F%B3%E9%A2%91%E6%B5%81%EF%BC%8C%E5%88%99%E8%AF%A5%E5%8C%85%E4%B8%8D%E5%AD%98%E5%9C%A8%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">第00个包（音频流声明包）（若无音频流，则该包不存在）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC01%E4%B8%AA%E5%8C%85%EF%BC%88%E8%A7%86%E9%A2%91%E6%B5%81%E5%A3%B0%E6%98%8E%E5%8C%85%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">第01个包（视频流声明包）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC02%E4%B8%AA%E5%8C%85%EF%BC%88Sofdec%E4%BF%A1%E6%81%AF%E5%8C%85%EF%BC%89%EF%BC%BB%E7%89%88%E6%9C%AC1%EF%BC%BD"><span class="nav-number"></span> <span class="nav-text">第02个包（Sofdec信息包）［版本1］</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC02%E4%B8%AA%E5%8C%85%EF%BC%88Sofdec%E4%BF%A1%E6%81%AF%E5%8C%85%EF%BC%89%EF%BC%BB%E7%89%88%E6%9C%AC2%EF%BC%BD"><span class="nav-number"></span> <span class="nav-text">第02个包（Sofdec信息包）［版本2］</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC03%E4%B8%AA%E5%8C%85%EF%BC%88%E8%B5%B7%E5%A7%8B%E5%9C%B0%E5%9D%80%EF%BC%9A0x00001800%EF%BC%8C%E6%BA%90%E4%BF%A1%E6%81%AF%E5%8C%85%EF%BC%88%E6%9A%82%E7%A7%B0%EF%BC%89%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">第03个包（起始地址：0x00001800，源信息包（暂称））</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E6%B5%81%E5%8C%85%E7%BB%84"><span class="nav-number"></span> <span class="nav-text">多路复用流包组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E6%B5%81%E5%AD%90%E5%8C%85%E7%BB%93%E6%9E%84"><span class="nav-number"></span> <span class="nav-text">音频流子包结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%86%E9%A2%91%E6%B5%81%E5%AD%90%E5%8C%85%E7%BB%93%E6%9E%84"><span class="nav-number"></span> <span class="nav-text">视频流子包结构</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%AE%A1%E7%AE%97"><span class="nav-number"></span> <span class="nav-text">数据计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number"></span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%A0%87%E5%87%86"><span class="nav-number"></span> <span class="nav-text">参考标准</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="星云nebulas"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">星云nebulas</p>
+  <div class="site-description" itemprop="description">有感而发，随兴而写</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nebulas-star" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nebulas-star" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-nd.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星云nebulas</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

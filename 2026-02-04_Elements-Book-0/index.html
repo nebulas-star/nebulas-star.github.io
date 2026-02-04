@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/apple-touch-icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"nebulas-star.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="直译自 Johan Ludvig Heiberg “Euclidis Opera omnia”（希腊语欧几里得全集），舍弃原文中方括号括起的部分（将它们视为非原始文段）。 文本来源：https:&#x2F;&#x2F;scaife.perseus.org&#x2F;library&#x2F;urn:cts:greekLit:tlg1799.tlg001&#x2F; 翻译时参考了 Thomas Heath “The Thirteen Books">
+<meta property="og:type" content="article">
+<meta property="og:title" content="希腊文直译《几何原本》序章：定义、公设与公理">
+<meta property="og:url" content="http://nebulas-star.github.io/2026-02-04_Elements-Book-0/index.html">
+<meta property="og:site_name" content="星云Nebulas的随记博客">
+<meta property="og:description" content="直译自 Johan Ludvig Heiberg “Euclidis Opera omnia”（希腊语欧几里得全集），舍弃原文中方括号括起的部分（将它们视为非原始文段）。 文本来源：https:&#x2F;&#x2F;scaife.perseus.org&#x2F;library&#x2F;urn:cts:greekLit:tlg1799.tlg001&#x2F; 翻译时参考了 Thomas Heath “The Thirteen Books">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-02-04T14:13:28.000Z">
+<meta property="article:modified_time" content="2026-02-04T14:20:16.068Z">
+<meta property="article:author" content="星云nebulas">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://nebulas-star.github.io/2026-02-04_Elements-Book-0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>希腊文直译《几何原本》序章：定义、公设与公理 | 星云Nebulas的随记博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">星云Nebulas的随记博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">有感而发，随兴而写</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-links">
+
+    <a href="/links/" rel="section"><i class="fa fa-fw fa-����"></i>links</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://nebulas-star.github.io/2026-02-04_Elements-Book-0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="星云nebulas">
+      <meta itemprop="description" content="有感而发，随兴而写">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="星云Nebulas的随记博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          希腊文直译《几何原本》序章：定义、公设与公理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2026-02-04 22:13:28 / 修改时间：22:20:16" itemprop="dateCreated datePublished" datetime="2026-02-04T22:13:28+08:00">2026-02-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>直译自 Johan Ludvig Heiberg “Euclidis Opera omnia”（希腊语欧几里得全集），舍弃原文中方括号括起的部分（将它们视为非原始文段）。</p>
+<p>文本来源：<a target="_blank" rel="noopener" href="https://scaife.perseus.org/library/urn:cts:greekLit:tlg1799.tlg001/">https://scaife.perseus.org/library/urn:cts:greekLit:tlg1799.tlg001/</a></p>
+<p>翻译时参考了 Thomas Heath “The Thirteen Books of Euclid’s Elements”（欧几里得十三卷《原本》）的注释。</p>
+</blockquote>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><ul>
+<li><ins>点</ins>不可分割。(1)</li>
+<li><ins>线</ins>是没有宽度的长度。(2)</li>
+<li><ins>线</ins>的末端是<ins>点</ins>。(3)</li>
+<li><ins>直线</ins>是均匀分布于其自身各<ins>点</ins>的<ins>线</ins>。(4)</li>
+<li><ins>面</ins>只有长度和宽度。(5)</li>
+<li><ins>面</ins>的末端是<ins>线</ins>。(6)</li>
+<li><ins>平面</ins>是均匀分布于其自身各<ins>直线</ins>的<ins>面</ins>。(7)</li>
+<li><ins>平面角</ins>是<ins>平面</ins>上的两条相交且不在同一<ins>直线</ins>上的<ins>线</ins>的夹角。(8)</li>
+<li>当包含该角的<ins>线</ins>是<ins>直线</ins>时，称之为<ins>直线角</ins>。(9)</li>
+<li>当<ins>直线</ins>与（另一条）<ins>直线</ins>相交，使得相邻的角彼此相等时，它们都可以被称为<ins>直角</ins>，且（这条）<ins>直线</ins>称为<ins>垂线</ins>。(10)</li>
+<li><ins>钝角</ins>比<ins>直角</ins>大。(11)</li>
+<li><ins>锐角</ins>比<ins>直角</ins>小。(12)</li>
+<li><ins>边界</ins>是任何事物的极限。(13)</li>
+<li><ins>图形</ins>由某条或任何<ins>边界</ins>包围而成。(14)</li>
+<li><ins>圆</ins>是被一条<ins>线</ins>围成的<ins>平面</ins><ins>图形</ins>，从其内部的一点到<ins>图形</ins>上各处的<ins>直线</ins>彼此相等；(15)</li>
+<li>这个<ins>点</ins>被称为<ins>圆心</ins>。(16)</li>
+<li><ins>圆</ins>的<ins>直径</ins>是任意一条贯穿<ins>圆心</ins>且两侧均终止于圆周的<ins>直线</ins>，且它也能将<ins>圆</ins>平分。(17)</li>
+<li><ins>半圆</ins>是被<ins>直径</ins>和它所截取的圆周包围而成的<ins>图形</ins>。<ins>半圆</ins><ins>圆心</ins>和<ins>圆</ins>相同。(18)</li>
+<li><ins>直线形</ins>是<ins>直线</ins>围成的<ins>图形</ins>，<ins>三边形</ins>由三条、<ins>四边形</ins>由四条、<ins>多边形</ins>由多于四条<ins>直线</ins>包围而成。(19)</li>
+<li>在<ins>三边形</ins>中，<ins>等边三角形</ins>有三条相等的边，<ins>等腰（三角）形</ins>只有两条相等的边，<ins>不等边（三角）形</ins>的三条边（互）不相等。(20)</li>
+<li>此外在<ins>三边形</ins>中，<ins>直角（三角）形</ins>是有一个<ins>直角</ins>的三角形，而<ins>钝角（三角）形</ins>有一个<ins>钝角</ins>，<ins>锐角（三角）形</ins>有三个<ins>锐角</ins>。(21)</li>
+<li>在<ins>四边形</ins>中，<ins>正方形</ins>等边且直角，<ins>长方形</ins>直角但不等边，<ins>菱形</ins>等边但不直角；<ins>类菱形</ins>¹的对边和对角彼此相等，但不等边也不直角。其他<ins>四边形</ins>都叫<ins>梯形</ins>²。(22)</li>
+<li><ins>平行线</ins>是两条在同一<ins>平面</ins>上，向两个方向无限延长，且彼此互不相交的<ins>直线</ins>。(23)</li>
+</ul>
+<h3 id="公设"><a href="#公设" class="headerlink" title="公设"></a>公设</h3><p>假定</p>
+<ul>
+<li>从每一点到每一点都能作出直线。³⁴ (1)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>具有有限长度的直线⁵能连续附加在直线上。(2)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>能以所有中心和半径描述一个圆。(3)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>所有直角彼此相等。(4)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>若一条直线与两条直线相交，并在某一侧的角小于两个直角⁶，则这两条直线无限延长后，在小于两个直角之和的这一侧相交。(5)</li>
+</ul>
+<h3 id="公理"><a href="#公理" class="headerlink" title="公理"></a>公理</h3><ul>
+<li>与某物相等的事物，彼此之间全部相等。(1)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>若（一组）相等加上（另一组）相等，其和也相等。(2)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>若从（一组）相等减去（另一组）相等，其差也相等。(3)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>完全吻合的事物彼此相等。⁷ (4)</li>
+</ul>
+<p>且</p>
+<ul>
+<li>整体大于部分。(5)</li>
+</ul>
+<h3 id="（脚注）"><a href="#（脚注）" class="headerlink" title="（脚注）"></a>（脚注）</h3><ol>
+<li>今称「平行四边形」。</li>
+<li>今「梯形」只指代「只有一组边平行的四边形」。</li>
+<li>在一般性陈述中，希腊人并不像现今使用「任意」形式的表述，而使用「所有」形式的表述。例如，「任意三角形」在《原本》各处均表述为「所有三角形」。</li>
+<li>公设 (1) 中隐含假定了「两条直线不能围成一个空间」(Heath, 1908) ，使得公设 (5) 成立。部分《原本》抄本不必要地将这一假设添列在「公设」或「公理」中。</li>
+<li>即「线段」。</li>
+<li>即「在某侧的内角和小于两个直角之和」。</li>
+<li>即「两个（在平移、翻转和&#x2F;或旋转后）能够完全重合的图形全等。」(Heath, 1908)</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>星云nebulas
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://nebulas-star.github.io/2026-02-04_Elements-Book-0/" title="希腊文直译《几何原本》序章：定义、公设与公理">http://nebulas-star.github.io/2026-02-04_Elements-Book-0/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-ND</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024-09-11_Chinese-Scripts-Typography/" rel="prev" title="近现代中式话剧剧本排版范式实作标准总结">
+      <i class="fa fa-chevron-left"></i> 近现代中式话剧剧本排版范式实作标准总结
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E8%AE%BE"><span class="nav-number">2.</span> <span class="nav-text">公设</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">公理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%EF%BC%88%E8%84%9A%E6%B3%A8%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">（脚注）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="星云nebulas"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">星云nebulas</p>
+  <div class="site-description" itemprop="description">有感而发，随兴而写</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/nebulas-star" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;nebulas-star" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-nd.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">星云nebulas</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
